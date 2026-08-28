@@ -1,56 +1,59 @@
-# Tiny Tapeout project information
+---
 project:
-  title:        ""      # Project title
-  author:       ""      # Your name
-  discord:      ""      # Your discord username, for communication and automatically assigning you a Tapeout role (optional)
-  description:  ""      # One line description of what your project does
-  language:     "Verilog" # other examples include SystemVerilog, Amaranth, VHDL, etc
-  clock_hz:     0       # Clock frequency in Hz (or 0 if not applicable)
+  title:        "Sensor Covariance Anomaly Detector"
+  author:       "OpenLane Odyssey"
+  discord:      "saithescienceguy"
+  description:  "Calibrates a per-channel mean and variance profile from an 8-channel sensor's baseline readings, then flags new readings that deviate too far from that profile."
+  language:     "Verilog"
+  clock_hz:     40000000
 
-  # How many tiles your design occupies? A single tile is about 167x108 uM.
-  tiles: "1x1"          # Valid values: 1x1, 1x2, 2x2, 3x2, 4x2, 6x2 or 8x2
+  # 1x2: verified via local OpenLane run -- 1x1 fails Global Placement at
+  # 186% utilization (std-cell area 24,189 sq um vs a single tile's usable
+  # core), 1x2 passes cleanly (DRC/LVS/antenna all pass, zero timing
+  # violations) at 87% target density.
+  tiles: "1x2"
 
-  # Your top module name must start with "tt_um_". Make it unique by including your github username:
-  top_module:  "tt_um_example"
-
-  # List your project's source files here.
-  # Source files must be in ./src and you must list each source file separately, one per line.
-  # Don't forget to also update `PROJECT_SOURCES` in test/Makefile.
   source_files:
-    - "project.v"
+    - "sensor_monitor.sv"
+    - "tt_um_sensor_monitor.sv"
+  top_module:  "tt_um_sensor_monitor"
 
-# The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
-# This section is for the datasheet/website. Use descriptive names (e.g., RX, TX, MOSI, SCL, SEG_A, etc.).
 pinout:
-  # Inputs
-  ui[0]: ""
-  ui[1]: ""
-  ui[2]: ""
-  ui[3]: ""
-  ui[4]: ""
-  ui[5]: ""
-  ui[6]: ""
-  ui[7]: ""
+  # Shared data-byte input: carries a calibration byte while calib_ld_en
+  # (uio_in[1]) is pulsed, or a reading-channel byte while reading_ld_en
+  # (uio_in[2]) is pulsed. Same 8 physical pins serve both roles.
+  ui_in[0]: "Data byte in, bit 0 (calibration byte or reading channel byte)"
+  ui_in[1]: "Data byte in, bit 1 (calibration byte or reading channel byte)"
+  ui_in[2]: "Data byte in, bit 2 (calibration byte or reading channel byte)"
+  ui_in[3]: "Data byte in, bit 3 (calibration byte or reading channel byte)"
+  ui_in[4]: "Data byte in, bit 4 (calibration byte or reading channel byte)"
+  ui_in[5]: "Data byte in, bit 5 (calibration byte or reading channel byte)"
+  ui_in[6]: "Data byte in, bit 6 (calibration byte or reading channel byte)"
+  ui_in[7]: "Data byte in, bit 7 (calibration byte or reading channel byte)"
 
-  # Outputs
-  uo[0]: ""
-  uo[1]: ""
-  uo[2]: ""
-  uo[3]: ""
-  uo[4]: ""
-  uo[5]: ""
-  uo[6]: ""
-  uo[7]: ""
+  uo_out[0]: "calib_done -- high once calibration has finished"
+  uo_out[1]: "anomaly_flag -- high if the last reading was flagged anomalous (valid once anomaly_valid has pulsed)"
+  uo_out[2]: "anomaly_valid -- one-cycle pulse marking anomaly_flag as freshly updated"
+  uo_out[3]: "unused"
+  uo_out[4]: "unused"
+  uo_out[5]: "unused"
+  uo_out[6]: "unused"
+  uo_out[7]: "unused"
 
-  # Bidirectional pins
-  uio[0]: ""
-  uio[1]: ""
-  uio[2]: ""
-  uio[3]: ""
-  uio[4]: ""
-  uio[5]: ""
-  uio[6]: ""
-  uio[7]: ""
+  uio_in[0]: "calib_start -- pulse once to begin calibration"
+  uio_in[1]: "calib_ld_en -- pulse once per calibration byte on ui_in"
+  uio_in[2]: "reading_ld_en -- pulse once per reading-channel byte on ui_in"
+  uio_in[3]: "unused"
+  uio_in[4]: "unused"
+  uio_in[5]: "unused"
+  uio_in[6]: "unused"
+  uio_in[7]: "unused"
 
-# Do not change!
-yaml_version: 6
+  uio_out[0]: "unused (this design never drives uio_out)"
+  uio_out[1]: "unused"
+  uio_out[2]: "unused"
+  uio_out[3]: "unused"
+  uio_out[4]: "unused"
+  uio_out[5]: "unused"
+  uio_out[6]: "unused"
+  uio_out[7]: "unused"
