@@ -94,7 +94,13 @@ async def send_reading_and_get_flag(dut, reading_bytes):
 
 @cocotb.test()
 async def test_calibration_and_detection(dut):
-    cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
+    cocotb.start_soon(Clock(dut.clk, 25, unit="ns").start())  # 40MHz -- matches the
+    # real, OpenLane-verified safe clock period (post-route STA: worst setup slack
+    # 3.24ns at 25ns across all PVT corners). The gate-level test specifically needs
+    # this to be realistic, since it's the one test that models real gate delay
+    # (UNIT_DELAY=#1) -- RTL simulation doesn't care about clock speed since it
+    # treats all logic as instantaneous, but gate-level sim will actually expose a
+    # too-fast clock as a real timing failure, which is exactly what happened here.
 
     await reset_dut(dut)
 
