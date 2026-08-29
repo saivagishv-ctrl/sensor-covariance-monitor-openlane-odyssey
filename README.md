@@ -1,27 +1,54 @@
 ![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg) ![](../../workflows/fpga/badge.svg)
 
-# Tiny Tapeout Verilog Project Template
+# Sensor Covariance Anomaly Detector
 
-- [Read the documentation for project](docs/info.md)
+A Tiny Tapeout SKY130 project by **OpenLane Odyssey**.
+
+This chip calibrates a per-channel mean and variance profile from an 8-channel
+sensor's baseline readings, then flags new readings that deviate too far from
+that calibrated profile -- entirely in a small, self-contained running-sum
+digital design (no matrix-multiply hardware, no on-chip storage of the raw
+calibration data).
+
+- [Read the full documentation for this project](docs/info.md)
+
+## How it works
+
+Calibration runs in two passes over the same 64 baseline bytes: the first
+pass computes each channel's mean via a running sum; the second pass, now
+that the mean is known, computes each channel's variance (sum of squared
+deviations) directly against the same bytes streamed a second time. Detection
+then checks a new 8-channel reading, one channel per cycle, against that
+calibrated profile, flagging the reading if any channel's deviation is too
+large relative to its calibrated variance.
+
+The calibration-variance step and the detection step share the same
+underlying hardware (one subtractor, one squaring multiplier) since they
+never run at the same time -- a deliberate area optimization that helped
+this design fit into two tiles instead of the nine-plus an earlier,
+matrix-multiplication-based version would have needed.
+
+See [docs/info.md](docs/info.md) for the full byte-serial protocol and a
+step-by-step guide to testing it.
+
+## Verification
+
+This design is verified two ways: a cocotb testbench (`test/test.py`, run
+automatically by this repo's CI against both RTL and the hardened gate-level
+netlist) and a plain SystemVerilog self-checking testbench
+(`test/tb_tt_um_sensor_monitor.sv`) for local simulation without a Python
+toolchain. Both drive the same set of calibration data and seven test
+readings -- normal, clearly anomalous, a borderline pair straddling the exact
+flagging threshold, and two readings with negative-byte values specifically
+exercising sign-extension in the shared datapath.
 
 ## What is Tiny Tapeout?
 
-Tiny Tapeout is an educational project that aims to make it easier and cheaper than ever to get your digital and analog designs manufactured on a real chip.
+Tiny Tapeout is an educational project that aims to make it easier and
+cheaper than ever to get your digital and analog designs manufactured on a
+real chip.
 
-To learn more and get started, visit https://tinytapeout.com.
-
-## Set up your Verilog project
-
-1. Add your Verilog files to the `src` folder.
-2. Edit the [info.yaml](info.yaml) and update information about your project, paying special attention to the `source_files` and `top_module` properties. If you are upgrading an existing Tiny Tapeout project, check out our [online info.yaml migration tool](https://tinytapeout.github.io/tt-yaml-upgrade-tool/).
-3. Edit [docs/info.md](docs/info.md) and add a description of your project.
-4. Adapt the testbench to your design. See [test/README.md](test/README.md) for more information.
-
-The GitHub action will automatically build the ASIC files using [LibreLane](https://www.zerotoasiccourse.com/terminology/librelane/).
-
-## Enable GitHub actions to build the results page
-
-- [Enabling GitHub Pages](https://tinytapeout.com/faq/#my-github-action-is-failing-on-the-pages-part)
+To learn more, visit https://tinytapeout.com.
 
 ## Resources
 
@@ -31,12 +58,6 @@ The GitHub action will automatically build the ASIC files using [LibreLane](http
 - [Join the community](https://tinytapeout.com/discord)
 - [Build your design locally](https://www.tinytapeout.com/guides/local-hardening/)
 
-## What next?
+## License
 
-- [Submit your design to the next shuttle](https://app.tinytapeout.com/).
-- Edit [this README](README.md) and explain your design, how it works, and how to test it.
-- Share your project on your social network of choice:
-  - LinkedIn [#tinytapeout](https://www.linkedin.com/search/results/content/?keywords=%23tinytapeout) [@TinyTapeout](https://www.linkedin.com/company/100708654/)
-  - Mastodon [#tinytapeout](https://chaos.social/tags/tinytapeout) [@matthewvenn](https://chaos.social/@matthewvenn)
-  - X (formerly Twitter) [#tinytapeout](https://twitter.com/hashtag/tinytapeout) [@tinytapeout](https://twitter.com/tinytapeout)
-  - Bluesky [@tinytapeout.com](https://bsky.app/profile/tinytapeout.com)
+Apache-2.0, see [LICENSE](LICENSE).
