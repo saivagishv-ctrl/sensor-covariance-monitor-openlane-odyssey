@@ -1,6 +1,6 @@
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge, Timer, ClockCycles
+from cocotb.triggers import RisingEdge, FallingEdge, ClockCycles
 
 # uio_in control bit positions (see tt_um_sensor_monitor.sv header)
 BIT_CALIB_START = 0
@@ -42,13 +42,20 @@ async def pulse_strobe(dut, bit, byte_val):
 
 
 async def pulse_reading_byte(dut, byte_val):
-    """Like pulse_strobe, but samples uo_out right after the capturing
-    edge (with a settling delay) since anomaly_valid is a single-cycle
-    pulse that a generic two-edge strobe would step past."""
+    """Like pulse_strobe, but samples uo_out just before the NEXT clock
+    edge (not a fixed short delay after this one) since anomaly_valid is
+    a single-cycle pulse that needs to be sampled once fully settled.
+    A fixed short delay (e.g. 1ns) is enough margin for RTL simulation
+    (zero-delay logic) but not for gate-level simulation, where every
+    synthesized cell has a real UNIT_DELAY and a deep combinational path
+    (like the shared subtract/multiply/compare datapath here) can take
+    longer than that to settle -- sampling too early reads a stale value
+    even though the real hardware gets the correct answer only slightly
+    later in the same cycle."""
     dut.ui_in.value = to_u8(byte_val)
     dut.uio_in.value = (1 << BIT_READING_LD)
     await RisingEdge(dut.clk)
-    await Timer(1, unit="ns")  # let this edge's nonblocking updates settle
+    await FallingEdge(dut.clk)  # sample mid-cycle, well after any gate-level settling
     uo = int(dut.uo_out.value)
     dut.uio_in.value = 0
     await RisingEdge(dut.clk)
