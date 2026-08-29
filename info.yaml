@@ -13,47 +13,44 @@ project:
   # violations) at 87% target density.
   tiles: "1x2"
 
+  top_module:  "tt_um_sensor_monitor"
+
   source_files:
     - "sensor_monitor.sv"
     - "tt_um_sensor_monitor.sv"
-  top_module:  "tt_um_sensor_monitor"
 
 pinout:
-  # Shared data-byte input: carries a calibration byte while calib_ld_en
-  # (uio_in[1]) is pulsed, or a reading-channel byte while reading_ld_en
-  # (uio_in[2]) is pulsed. Same 8 physical pins serve both roles.
-  ui_in[0]: "Data byte in, bit 0 (calibration byte or reading channel byte)"
-  ui_in[1]: "Data byte in, bit 1 (calibration byte or reading channel byte)"
-  ui_in[2]: "Data byte in, bit 2 (calibration byte or reading channel byte)"
-  ui_in[3]: "Data byte in, bit 3 (calibration byte or reading channel byte)"
-  ui_in[4]: "Data byte in, bit 4 (calibration byte or reading channel byte)"
-  ui_in[5]: "Data byte in, bit 5 (calibration byte or reading channel byte)"
-  ui_in[6]: "Data byte in, bit 6 (calibration byte or reading channel byte)"
-  ui_in[7]: "Data byte in, bit 7 (calibration byte or reading channel byte)"
+  # Inputs -- shared data-byte input: carries a calibration byte while
+  # calib_ld_en (uio[1]) is pulsed, or a reading-channel byte while
+  # reading_ld_en (uio[2]) is pulsed. Same 8 physical pins serve both roles.
+  ui[0]: "Data byte in, bit 0 (calibration byte or reading channel byte)"
+  ui[1]: "Data byte in, bit 1 (calibration byte or reading channel byte)"
+  ui[2]: "Data byte in, bit 2 (calibration byte or reading channel byte)"
+  ui[3]: "Data byte in, bit 3 (calibration byte or reading channel byte)"
+  ui[4]: "Data byte in, bit 4 (calibration byte or reading channel byte)"
+  ui[5]: "Data byte in, bit 5 (calibration byte or reading channel byte)"
+  ui[6]: "Data byte in, bit 6 (calibration byte or reading channel byte)"
+  ui[7]: "Data byte in, bit 7 (calibration byte or reading channel byte)"
 
-  uo_out[0]: "calib_done -- high once calibration has finished"
-  uo_out[1]: "anomaly_flag -- high if the last reading was flagged anomalous (valid once anomaly_valid has pulsed)"
-  uo_out[2]: "anomaly_valid -- one-cycle pulse marking anomaly_flag as freshly updated"
-  uo_out[3]: "unused"
-  uo_out[4]: "unused"
-  uo_out[5]: "unused"
-  uo_out[6]: "unused"
-  uo_out[7]: "unused"
+  # Outputs
+  uo[0]: "calib_done -- high once calibration has finished"
+  uo[1]: "anomaly_flag -- high if the last reading was flagged anomalous (valid once anomaly_valid has pulsed)"
+  uo[2]: "anomaly_valid -- one-cycle pulse marking anomaly_flag as freshly updated"
+  uo[3]: ""
+  uo[4]: ""
+  uo[5]: ""
+  uo[6]: ""
+  uo[7]: ""
 
-  uio_in[0]: "calib_start -- pulse once to begin calibration"
-  uio_in[1]: "calib_ld_en -- pulse once per calibration byte on ui_in"
-  uio_in[2]: "reading_ld_en -- pulse once per reading-channel byte on ui_in"
-  uio_in[3]: "unused"
-  uio_in[4]: "unused"
-  uio_in[5]: "unused"
-  uio_in[6]: "unused"
-  uio_in[7]: "unused"
+  # Bidirectional pins -- used as inputs only in this design (control strobes)
+  uio[0]: "calib_start -- pulse once to begin calibration"
+  uio[1]: "calib_ld_en -- pulse once per calibration byte on ui[7:0]"
+  uio[2]: "reading_ld_en -- pulse once per reading-channel byte on ui[7:0]"
+  uio[3]: ""
+  uio[4]: ""
+  uio[5]: ""
+  uio[6]: ""
+  uio[7]: ""
 
-  uio_out[0]: "unused (this design never drives uio_out)"
-  uio_out[1]: "unused"
-  uio_out[2]: "unused"
-  uio_out[3]: "unused"
-  uio_out[4]: "unused"
-  uio_out[5]: "unused"
-  uio_out[6]: "unused"
-  uio_out[7]: "unused"
+# Do not change!
+yaml_version: 6
