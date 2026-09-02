@@ -1,12 +1,12 @@
 ![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg) ![](../../workflows/fpga/badge.svg)
 
-# Sensor Covariance Anomaly Detector
+# Sensor Covariance Anomaly Detector - A BWSI bASICs project
 
 A Tiny Tapeout SKY130 project by **OpenLane Odyssey**.
 
 This chip calibrates a per-channel mean and variance profile from an 8-channel
 sensor's baseline readings, then flags new readings that deviate too far from
-that calibrated profile -- entirely in a small, self-contained running-sum
+that calibrated profile. entirely in a small, self-contained running-sum
 digital design (no matrix-multiply hardware, no on-chip storage of the raw
 calibration data).
 
